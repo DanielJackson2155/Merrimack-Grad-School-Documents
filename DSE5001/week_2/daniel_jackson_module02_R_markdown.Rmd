@@ -1,0 +1,763 @@
+---
+title: "daniel_jackson_module02_R_markdown"
+author: "Daniel Jackson"
+date: "September 8th, 2023"
+output: pdf_document
+---
+
+## Module 02 HW
+
+Chapter 3 HW:
+In this chapter, you can use the weight data set and perform all the actions covered here:  selecting variables, filtering observations and reshaping.
+
+```{r ch3}
+# Load all libraries in that will be used in HW
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(readr)
+library(ggExtra)
+library(psych)
+library(tidyverse)
+library(ggrepel)
+
+# Read in weight data
+weight_df = read_csv('week_2/data/weight.csv')
+
+# Let's select gender, weight and age variables
+select(weight_df, gender, weight, age)
+
+# Select variables in the range between two variables
+select(weight_df, gender:handedness)
+
+# Select same range of variables above using indices
+select(weight_df, 2:5)
+
+# Select variables that start with h. This returns height and handedness variables
+select(weight_df, starts_with('h'))
+
+# Select variables that end with e. This returns race and age variables
+select(weight_df, ends_with('e'))
+
+# Select variables that contains eigh. This returns height and weight
+select(weight_df, contains('eigh'))
+
+# Remove the age variable
+select(weight_df, -age)
+
+# Remove multiple variables
+select(weight_df, -age, -height, -weight)
+
+# Remove multiple with range using variable names
+select(weight_df, -(gender:weight))
+
+# Now remove multiple with range using indices
+select(weight_df, -(2:4))
+
+# Select variables that are character vectors using select_if
+select_if(weight_df, where(is.character))
+
+# Select numeric vectors
+select_if(weight_df, where(is.numeric))
+
+# Rename variable using select()
+select(weight_df, participant = subjectid)
+
+# Use rename() function to rename variable. This updates name and returns full data frame
+rename(weight_df, participant = subjectid)
+
+# Select observations in weight_df using slice and filter
+# Select rows 50, 100, 150, 250, 300, 350
+slice(weight_df, c(50, 100, 150, 200, 250, 300, 350))
+
+# Slice data frame by 1st to 100th row
+slice(weight_df, 1:100)
+
+# Slice data frame to remove rows 100 to 300
+slice(weight_df, -(100:300))
+
+# Slice data frame to list observation from row 5000 to end of data frame using n()
+slice(weight_df, 5000:n())
+
+# Use filter to filter observations. This code returns all right handed observations
+filter(weight_df, handedness == 'right')
+
+# Filter with multiple variables. Let's look at right handed females
+filter(weight_df, handedness == 'right', gender == 'female')
+
+# Filter observations by right handed females whose height is less than or equal to 165
+filter(weight_df, handedness == 'right'& gender == 'female' & height <= 165)
+
+# Use mutate to add new variable called right_male that shows TRUE when gender is male and handedness is right
+mutate(weight_df, right_male = ((handedness == 'right') & (gender == 'male')))
+
+# Create multiple variables. Create right_female and left_female
+mutate(weight_df, right_male = ((handedness == 'right') & (gender == 'male')),
+                  left_female = ((handedness == 'left') & (gender == 'female')))
+
+# Use mutate_all to turn all variables into character vectors
+mutate_all(weight_df, as.character)
+
+# Use transmute to create right_male variable and return only that new variable
+transmute(weight_df, right_male = ((handedness == 'right') & (gender == 'male')))
+
+# Use transmute to create right_male and left_female and return only those variables
+transmute(weight_df, right_male = ((handedness == 'right') & (gender == 'male')),
+       left_female = ((handedness == 'left') & (gender == 'female')))
+
+# Use arrange to sort by gender then by age
+arrange(weight_df, gender, age)
+
+# Use arrange to sort by subjectid in reverse
+arrange(weight_df, desc(subjectid))
+
+# Use sample_frac to subsample weight_df by randomly sampling 20% of data frame
+sample_frac(weight_df, 0.2)
+
+# Use sample_n to sample specified number of observations. We will do 100 random observations
+sample_n(weight_df, 100)
+
+# Use top_n to select top 100 observations according to age variable. This returns 114 rows because there are ties
+top_n(weight_df, 100, age) 
+
+# Use top_n to select bottom 100 observations by age
+top_n(weight_df, -100, age) 
+
+# Use summarize() to calculate summary stats on weight_df. Find mean, median and sd of height
+summarize(weight_df,
+          mean_height = mean(height, na.rm = TRUE),
+          median_height = median(height, na.rm = TRUE),
+          sd_height = sd(height, na.rm = TRUE))
+
+# Use summarize_all to apply summary function to all variables. Apply n_distinct to count unique values in each vector
+summarize_all(weight_df, n_distinct)
+
+# Use summarize_if to find mean of all numeric variables
+summarize_if(weight_df, is.numeric, ~mean(., na.rm = TRUE))
+
+# Use summarize_at to find mean, median and sd of weight
+summarize_at(weight_df,
+             vars(weight),
+             list(mean = ~mean(., na.rm = TRUE),
+                  median = ~median(., na.rm = TRUE),
+                  sd = ~sd(., na.rm = TRUE)
+             )
+)
+
+# Calculate same three summary stats for three variables
+summarize_at(weight_df,
+             vars(weight, height, age),
+             list(mean = ~mean(., na.rm = TRUE),
+                  median = ~median(., na.rm = TRUE),
+                  sd = ~sd(., na.rm = TRUE)
+             )
+)
+
+# Use group_by function to group by gender
+weight_by_gender_df = group_by(weight_df, gender)
+weight_by_gender_df
+
+# We see that there are two groups of genders. Use summarize to this grouped data frame to find average age of each group
+summarize(weight_by_gender_df, mean = mean(age, na.rm = TRUE))
+
+# calculate three sumamry stats for age variable of weight_by_gender_df using summary_at
+summarize_at(weight_by_gender_df,
+             vars(age),
+             list(mean = ~mean(., na.rm = TRUE),
+                  median = ~median(., na.rm = TRUE),
+                  sd = ~sd(., na.rm = TRUE)
+             )
+)
+
+# Use summarize and group_by together to create new reduced data
+summarize(group_by(weight_df, race, age))
+
+# To ungroup any gropued data, use ungroup() function
+ungroup(weight_by_gender_df)
+
+# Reshape weight_df using pivot_longer and pivot_wider. 
+# Use pivot_longer to create data frame where height and weight are listed in measurement column with corresponding values to each in value column
+long_weight_df = pivot_longer(weight_df, 
+                              cols = contains('eight'),
+                              names_to = 'measurement',
+                              values_to = 'value')
+long_weight_df
+
+# Let's use pivot_wider to get back to original data frame
+wide_weight_df = pivot_wider(long_weight_df,
+                             names_from = 'measurement',
+                             values_from = 'value')
+wide_weight_df
+
+
+```
+
+
+Chapter 4 HW:
+As with the previous chapter on data wrangling, a valuable exercise based on this chapter is for the reader to use their own data-sets to practice with all the plotting methods that are described in the chapter. It may be that different data sets may be required for different types of plots. See additional datasets below 
+
+```{r ch4}
+
+# Simple plotting exercies
+simple_df = tribble(
+  ~var1, ~var2, ~var3,
+  1, 4, 'a',
+  3, 10, 'a',
+  7, 40, 'b',
+  10, 90, 'b'
+)
+
+# Create scatter plot of simple df with x axis as var1 and y axis as var2
+ggplot(simple_df,
+       mapping = aes(x = var1, y = var2)) +
+         geom_point()
+
+# Create line plot
+ggplot(simple_df,
+       mapping = aes(x = var1, y = var2)) +
+  geom_line()
+
+# Add additional mapping to scatter plot using var3, which is a discrete variable. Since it is discrete, let's map it to shape
+ggplot(simple_df,
+       mapping = aes(x = var1, y = var2, shape = var3)) +
+  geom_point()
+
+# We can represent var3 with colors using color = var3 instead 
+ggplot(simple_df,
+       mapping = aes(x = var1, y = var2, color = var3)) +
+  geom_point()
+
+# Histograms
+# Create histogram using weight_df. Subsample weight_df first to 1000 observations
+weight_df_1 = weight_df %>%
+  sample_n(1000)
+ggplot(weight_df_1,
+       mapping = aes(x = height)) + 
+  geom_histogram()
+
+# Use binwidth = 2.54 so we can specify width of bin
+ggplot(weight_df_1,
+       mapping = aes(x = height)) + 
+  geom_histogram(binwidth = 2.54)
+
+# Add interior color using fill = '' and add border using color = ''
+ggplot(weight_df_1,
+       mapping = aes(x = height)) + 
+  geom_histogram(binwidth = 2.54, color = 'white', fill = 'blue')
+
+# If we speciy that either colour or fill (or maybe both) should be a discrete variable, we obtain stacked histogram
+ggplot(weight_df_1,
+       mapping = aes(x = height, fill = gender)) + 
+  geom_histogram(binwidth = 2.54, color = 'white')
+
+# In stacked histogram, each bin codes the proportion of that bin's values that correspond to each value of discrete variable. Each bar in our stacked histogram occupies 100% of the plot's height. Set position to 'fill' within geom_histogram
+ggplot(weight_df_1,
+       mapping = aes(x = height, fill = gender)) + 
+  geom_histogram(binwidth = 2.54, color = 'white', position = 'fill')
+
+# We can create two seperate histograms on the same graph by using position = 'dodge' in geom_histogram
+ggplot(weight_df_1,
+       mapping = aes(x = height, fill = gender)) + 
+  geom_histogram(binwidth = 2.54, color = 'white',position = 'dodge')
+
+# Place bars corresponding to males and females at exact same location using position = 'identity'
+ggplot(weight_df_1,
+       mapping = aes(x = height, fill = gender)) + 
+  geom_histogram(binwidth = 2.54, color = 'white',position = 'identity')
+
+# To make it so that we can see hidden female bars behind the male bars (occlustion), use alpha = 0.75 (or any value less than 1)
+ggplot(weight_df_1,
+       mapping = aes(x = height, fill = gender)) + 
+  geom_histogram(binwidth = 2.54, color = 'white',position = 'identity', alpha = 0.60)
+
+# Another way to avoide occlusion is to map gender to color rather than fill, and set fill to white
+ggplot(weight_df_1,
+       mapping = aes(x = height, color = gender)) + 
+  geom_histogram(binwidth = 2.54, fill = 'white', position = 'identity', alpha = 0.60)
+
+# Frequency Polygons
+# Create frequency polygon instead of histogram
+ggplot(weight_df_1,
+       mapping = aes(x = height)) + 
+  geom_freqpoly(binwidth = 2.54, color = 'steelblue')
+
+# Map gender to color to product two overlaid lines. Equivalent of the histogram using position = 'identity'
+ggplot(weight_df_1,
+       mapping = aes(x = height, color = gender)) + 
+  geom_freqpoly(binwidth = 2.54)
+
+# Stack frequency polygon using position = 'stack'
+ggplot(weight_df_1,
+       mapping = aes(x = height, color = gender)) + 
+  geom_freqpoly(binwidth = 2.54, position = 'stack')
+
+# Use geom_area() to create area plot which is filled in frequency polygon
+ggplot(weight_df_1,
+       mapping = aes(x = height, fill = gender)) + 
+  geom_area(binwidth = 2.54, position = 'identity', stat = 'bin', alpha = 0.5)
+
+# Set position = 'stack' to obtain stacked area plot
+ggplot(weight_df_1,
+       mapping = aes(x = height, fill = gender)) + 
+  geom_area(binwidth = 2.54, position = 'stack', stat = 'bin')
+
+# We can also set position = 'fill'
+ggplot(weight_df_1,
+       mapping = aes(x = height, fill = gender)) + 
+  geom_area(binwidth = 2.54, position = 'fill', stat = 'bin', alpha = 0.5)
+
+# Density Plots
+# Density plots use kernel density estimation (KDE) to estimate probability density over the variable. Use geom_density()
+ggplot(weight_df, 
+       mapping = aes(x = height)) +
+  geom_density()
+
+# We can change color of border with color = and interior with fill = 
+ggplot(weight_df, 
+       mapping = aes(x = height)) +
+  geom_density(color = 'white', fill = 'darkblue')
+
+# Set both fill and color to gender to plot both denisty plots for each gender.
+ggplot(weight_df, 
+       mapping = aes(x = height, color = gender, fill = gender)) +
+  geom_density(alpha = 0.5)
+# Use alpha = 0.5 to avoid occulusion bewteen each plot
+
+# Set position = 'stack' to stack density plots
+ggplot(weight_df, 
+       mapping = aes(x = height, color = gender, fill = gender)) +
+  geom_density(position = 'stack')
+
+# To fill the stacked density plot, set position to 'fill'
+ggplot(weight_df, 
+       mapping = aes(x = height, color = gender, fill = gender)) +
+  geom_density(position = 'fill')
+
+# Barplots
+# Use barplots for discrete variables. Histograms and Density plots are meant for continuous variables
+# Read in TitanticSurvival.csv
+titanic_df = read_csv('week_2/data/TitanicSurvival.csv')
+# Create barplot of each passenger in each passenger class
+ggplot(titanic_df,
+       mapping = aes(x = passengerClass)) +
+  geom_bar()
+
+# Use fill property to plot the variable survived in dataframe
+ggplot(titanic_df,
+       mapping = aes(x = passengerClass, fill = survived)) +
+  geom_bar()
+
+# Use position = 'dodge' in geom_bar() to put bars next to each other
+ggplot(titanic_df,
+       mapping = aes(x = passengerClass, fill = survived)) +
+  geom_bar(position = 'dodge')
+
+# Create barplot where the heights of the bars are given by the value of variable in data frame
+# Read in carprice.csv
+car_prices_df = read_csv('week_2/data/carprice.csv')
+# Let's group by Type variable then summarize by average Price variable
+car_prices_avg_price = car_prices_df %>%
+  group_by(Type) %>%
+  summarize(price = mean(Price))
+
+# Plot barplot where x axis is Type, y axis is price
+ggplot(car_prices_avg_price,
+       mapping = aes(x = Type, y = price)) +
+  geom_bar(stat = 'identity')
+# stat = 'identity' tells the plot that the height of the bars to be actual value of price from data frame
+
+# You can display two discrete variables by mapping the fill variable
+# Read in FatRats.csv
+fat_rats_df = read_csv('week_2/data/FatRats.csv')
+# Use group_by and summarize() to create smaller data frame
+fat_rats_sub_df = fat_rats_df %>%
+  group_by(Protein, Source) %>%
+  summarize(gain = mean(Gain), se = sd(Gain) / sqrt(n()))
+# Plot it with barplot
+ggplot(fat_rats_sub_df,
+       mapping = aes(x = Source, y = gain, fill = Protein)) +
+  geom_bar(stat = 'identity', position = 'dodge')
+
+# We can add error bars to barplots using geom_errorbar. geom_errorbar must match default width of bars which is 0.9
+ggplot(fat_rats_sub_df,
+       mapping = aes(x = Source, y = gain, fill = Protein, 
+                     ymin = gain - se, ymax = gain + se)) +
+  geom_bar(stat = 'identity', position = 'dodge') +
+  geom_errorbar(width = 0.2, position = position_dodge(width = 0.9))
+
+# Tukey Boxplots
+# Most common subtype and ar the default type implemented in ggplot2 using geom_boxplot()
+# Read in swiss data frame
+swiss_df = swiss %>%
+  rownames_to_column('province') %>%
+  rename_all(tolower) %>%
+  mutate(catholic = catholic > 50)
+
+  
+
+# Use Tukey boxplot to display distribution of the fertility variable in swiss dataframe
+ggplot(swiss_df,
+       mapping = aes(y = fertility)) +
+  geom_boxplot()
+
+# To tell R that the x variable is discrete, use x = ''. This changes width of box plot
+ggplot(swiss_df,
+       mapping = aes(x = '', y = fertility)) +
+  geom_boxplot(width = 0.25)
+
+# You can convert vertical box plot to horizontal one using coord_flip()
+ggplot(swiss_df,
+       mapping = aes(x = '', y = fertility)) +
+  geom_boxplot(width = 0.25) +
+  coord_flip()
+
+# Add rug plot using geom_plot() which displays location of every data point usint a short line
+ggplot(swiss_df,
+       mapping = aes(x = '', y = fertility)) +
+  geom_boxplot(width = 0.25) +
+  coord_flip() +
+  geom_rug(sides = 'l')
+# sides = 'l' argument says that we only want rug on left side of graph, which is bottom axis when graph is flipped
+
+# Can also add jitter plot which is like a scatter plot of each individual point where each point is pertrubed
+ggplot(swiss_df,
+       mapping = aes(x = '', y = fertility)) +
+  geom_boxplot(width = 0.25) +
+  coord_flip() +
+  geom_rug(sides = 'l') +
+  geom_jitter()
+
+# Can clean up plot by reducing spread points along vertical axis so they are within width of box. Since we are showing all plots, we can remove outliers
+ggplot(swiss_df,
+       mapping = aes(x = '', y = fertility)) +
+  geom_boxplot(width = 0.25, outlier.shape = NA) +
+  coord_flip() +
+  geom_rug(sides = 'l') +
+  geom_jitter(width = 0.1, size = 0.75)
+
+# We can map x property to a third variable to display multiple boxplots
+ggplot(swiss_df,
+       mapping = aes(x = catholic, y = fertility)) +
+  geom_boxplot(width = 0.25, outlier.shape = NA) +
+  geom_jitter(width = 0.1, size = 0.75)
+
+# We can scale the width of the box with the square root of the sample size by setting varwidth to TRUE
+# We can also set notch to TRUE to provide measure of the uncertainty concerning true value of median
+ggplot(swiss_df,
+       mapping = aes(x = catholic, y = fertility)) +
+  geom_boxplot(width = 0.25, outlier.shape = NA, varwidth = T, notch = T) +
+  geom_jitter(width = 0.1, size = 0.75)
+
+# You can color code different box plots to make them more distinguishable using color or fill, or both
+# Use built in dataset morley
+morley_df = morley
+morley_df %>%
+  mutate(Expt = as.factor(Expt)) %>%
+  ggplot(
+    mapping = aes(x = Expt, y = Speed, fill = Expt)) +
+  geom_boxplot(width = 0.25, outlier.shape = NA, varwidth = T) +
+  geom_jitter(aes(color = Expt), alpha = 0.5, width = 0.1, size = 0.75)
+
+# In this example, since box plots are labeled, we can remove legend with legend.position = 'none'
+morley_df %>%
+  mutate(Expt = as.factor(Expt)) %>%
+  ggplot(
+    mapping = aes(x = Expt, y = Speed, fill = Expt)) +
+  geom_boxplot(width = 0.25, outlier.shape = NA, varwidth = T) +
+  geom_jitter(aes(color = Expt), alpha = 0.5, width = 0.1, size = 0.75) +
+  theme(legend.position = 'none')
+
+# We can use another as the color variable thus dispalying boxplots for each combination of the values of two grouping variables
+# Read in built in dataset ToothGrowth
+tooth_growth_df = ToothGrowth
+tooth_growth_df %>%
+  mutate(dose = as.factor(dose)) %>%
+  ggplot(mapping = aes(x = dose, y = len, color = supp)) +
+  geom_boxplot(outlier.shape = NA, varwidth = T) +
+  geom_jitter(position = position_jitterdodge(0.5), size = 0.75)
+
+# Scatterplots
+# More in-depth scatterplots
+# Scatterplot of weight_df as function of height
+ggplot(weight_df,
+       mapping = aes(x = height, y = weight)) +
+  geom_point()
+
+# We can change size and shape of point within geoms()
+ggplot(weight_df,
+       mapping = aes(x = height, y = weight)) +
+  geom_point(size = 0.5, shape = 'triangle')
+
+# Use another variable, gender, as color within mapping
+ggplot(weight_df,
+       mapping = aes(x = height, y = weight, color = gender)) +
+  geom_point(size = 0.5)
+
+# Add rug plot to both x and y axis to see distribution over individual variables
+ggplot(weight_df,
+       mapping = aes(x = height, y = weight, color = gender)) +
+  geom_point(size = 0.5) +
+  geom_rug(alpha = 0.5, linewidth = 1/10)
+# I got a warning message about using 'size =' in geom_rug so I used 'linewidth' instead
+
+# There is a wider set of marginal distributions in scatterplots available in ggMarginal function that is part of ggExtra package
+# to use ggExtra, assign plot to variable
+p = ggplot(weight_df,
+           mapping = aes(x = height, y = weight, color = gender)) +
+  geom_point(size = 0.5)
+# Use ggMarginal(p) to display it
+ggMarginal(p)
+
+# The grouping color is not shown on the density functions shown. Use following code to build histogram
+ggMarginal(p, type = 'histogram', groupColour = T, groupFill = T,
+           position = 'identity', alpha = 0.5)
+
+# We can add smoothing function. A loess(locally estimated scatterplot smoohting) captures the trends in a scatterplot by fititng a locally weighted regression function
+ggplot(swiss_df,
+       mapping = aes(x = examination, y = fertility)) +
+  geom_point() +
+  geom_smooth()
+# loess smoother uses 80 evenly spaced points in the range of the predictor variable and uses linear regression at each point
+
+# We can change the number of evaluations points and the regression function by specying the value of n and formula
+ggplot(swiss_df,
+       mapping = aes(x = examination, y = fertility)) +
+  geom_point() + geom_smooth(n = 5, formula = y ~ x)
+# formula = y ~ x used to fit linear regression line to to the data
+ggplot(swiss_df,
+       mapping = aes(x = examination, y = fertility)) +
+  geom_point() + geom_smooth(method = 'lm')
+# This displays the least squares line of best fit that we would obtain from standard linear regression analysis. Can be turned off setting se = F
+ggplot(swiss_df,
+       mapping = aes(x = examination, y = fertility)) +
+  geom_point() + geom_smooth(method = 'lm', se = F)
+
+# Set color = catholic so each point will color-code whether corresponding province is Catholic or Protestant
+ggplot(swiss_df,
+       mapping = aes(x = examination, y = fertility, color = catholic)) +
+  geom_point()
+
+# Let's add smoothing curve or line of best fit
+ggplot(swiss_df,
+       mapping = aes(x = examination, y = fertility, color = catholic)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = F)
+# Lines extend only over the range of subet of points. We can extend the line
+ggplot(swiss_df,
+       mapping = aes(x = examination, y = fertility, color = catholic)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = F, fullrange = T)
+
+# To keep the points color-coded by catholic variable and produce single line of best fit, we need to restrict color = catholic to geom_point()
+ggplot(swiss_df,
+       mapping = aes(x = examination, y = fertility)) +
+  geom_point(mapping = aes(color = catholic)) +
+  geom_smooth(method = 'lm', se = F, fullrange = T)
+
+# We can add labels by setting the label mapping and using geom_text
+swiss_df %>%
+  ggplot(mapping = aes(x = examination, y = fertility, 
+                       label = province, color = catholic)) +
+  geom_point(size = 0.5) +
+  geom_text(size = 2)
+# Use geom_text_repel from ggrepel package to can minimize or overcome overlapping labels on plot
+swiss_df %>%
+  ggplot(mapping = aes(x = examination, y = fertility, 
+                       label = province, color = catholic)) +
+  geom_point(size = 0.5) +
+  geom_text_repel(size = 2, segment.alpha = 0.5)
+# segment.alpha = 0.5 controls transparency of lines connecting lables to points
+
+# Labeling all of our points can get really messy. We can label specific points
+# Let's label only thos provinces where fertility rates were very high or very low
+swiss_df %>%
+  mutate(extreme = ifelse(fertility < 50 | fertility > 90, province, '')) %>%
+  ggplot(mapping = aes(x = examination, y = fertility, 
+                       label = extreme, color = catholic)) +
+  geom_point(size = 0.5) +
+  geom_text_repel(size = 2)
+# mutate(extreme = ifelse(fertility < 50 | fertility > 90, province, '')) adds new variable extreme where if fertility is less than 50 or greater than 90, it returns name of province, and empty string if not extreme
+
+# We can also use geom_label or geom_label_repel
+swiss_df %>%
+  mutate(extreme = ifelse(fertility < 50 | fertility > 90, province, '')) %>%
+  ggplot(mapping = aes(x = examination, y = fertility, 
+                       label = extreme, color = catholic)) +
+  geom_point(size = 0.5) +
+  geom_label_repel(size = 2)
+
+# Bubbleplots
+# Bubbleplots are scatterplots wehre the size of the point is determind by the value of the third variable
+# Use midwest data set from ggplot2
+midwest_df = midwest
+midwest_df %>%
+  ggplot(mapping = aes(x = percollege, y = percprof, size = poptotal)) +
+  geom_point(alpha = 0.5) +
+  scale_size_continuous(labels = scales::comma_format(scale = 1))
+# Used scale_size_continuous function to change legend format
+
+# Facet plots
+# All you to produce multiple related subplots, where each subplot displays some subset of data
+ggplot(titanic_df,
+       mapping = aes(x = passengerClass, fill = survived)) +
+  geom_bar(position = 'dodge') +
+  facet_wrap(~sex)
+
+# When there is multiple subplots, facet_wrap will wrap the subplots
+# Produce one scatter plot from sleepstudy.csv with line of best fit for each of the 18 subjects in the experiment
+sleepstudy_df = read_csv('week_2/data/sleepstudy.csv')
+ggplot(sleepstudy_df,
+       mapping = aes(x = Days, y = Reaction, color = Subject)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = F) +
+  facet_wrap(~Subject) +
+  theme_minimal() +
+  theme(legend.position = 'none')
+# theme_minimal() sets plots theme to minimal style
+# use nrow to specify number of rows to use in facet_wrap
+ggplot(sleepstudy_df,
+       mapping = aes(x = Days, y = Reaction, color = Subject)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = F) +
+  facet_wrap(~Subject, nrow = 3) +
+  theme_minimal() +
+  theme(legend.position = 'none')
+```
+
+
+Chapter 5 HW:
+Perform some univariate exploratory analyses. For example, from one or more variables of interest plot their histograms and boxplots, both overall, and when the variable is grouped according to values of another variable. In parallel, calculate summary statistics measures of central tendency, dispersion, skewness, and kurtosis. Compare the plots to the tables of quantities to be able to get a grasp on how certain summaries of the data manifest themselves visualization, and how certain properties of the plots manifest themselves in summary statistics. For example, see whether histograms with long tails correspond to relatively high values of skewness, and vice versa.
+```{r ch5}
+
+# Let's perform univariate exploratory analyses on car_prices_df
+car_prices_df = car_prices_df %>%
+  rename_all(tolower)
+summarize(car_prices_df,
+          avg_price = mean(price, na.rm = TRUE), # mean
+          med_price = median(price, na.rm = TRUE), # median
+          sd_price = sd(price, na.rm = TRUE), # standard deviation
+          var_price = var(price, na.rm = TRUE), # variance
+          mad_price = mad(price, na.rm = TRUE) # median absolute deviation
+          )
+
+# Run same summary on prices per vehicle type
+car_prices_by_type = group_by(car_prices_df, type)
+summarize(car_prices_by_type,
+          avg_price = mean(price, na.rm = TRUE),
+          med_price = median(price, na.rm = TRUE),
+          sd_price = sd(price, na.rm = TRUE),
+          var_price = var(price, na.rm = TRUE),
+          mad_price = mad(price, na.rm = TRUE)
+          )
+
+# Range of price
+max(car_prices_df$price) - min(car_prices_df$price)
+# Now by vehicle type
+summarize(car_prices_by_type,
+          range_price = max(price) - min(price))
+
+
+# Quantile range for price
+quant_range_price = function(x, lower, upper){
+  quantile(x, probs = c(lower, upper)) %>%
+    unname() %>%
+    diff()
+}
+# 100% inner range
+quant_range_price(car_prices_df$price, lower = 0.0, upper = 1.0)
+# 90% inner range
+quant_range_price(car_prices_df$price, lower = 0.05, upper = 0.95)
+# 80% inner range
+quant_range_price(car_prices_df$price, lower = 0.1, upper = 0.9)
+# Interquantile range
+quant_range_price(car_prices_df$price, lower = 0.25, upper = 0.75)
+# OR you can do this code
+IQR(car_prices_df$price)
+
+
+# Skewness
+library(psych)
+psych::skew(car_prices_df$price)
+
+# Skewness of price by vehicle type
+summarize(car_prices_by_type,
+          psych::skew(car_prices_by_type$price))
+
+# Quantile skewness
+qskewness = function(x, p = 0.25){
+  Q = quantile(x, probs = c(p, 0.5, 1 - p)) %>%
+    unname()
+  Q_1 = Q[1]; m = Q[2]; Q_u = Q[3]
+  ((Q_u - m) - (m - Q_1)) / (Q_u - Q_1)
+}
+# Quantile skew
+qskewness(car_prices_df$price)
+# Octile skew
+qskewness(car_prices_df$price, p = 1/8)
+# Decile skew
+qskewness(car_prices_df$price, p = 1/10)
+
+# Quantile skew by type
+summarize(car_prices_by_type,
+          qskewness(car_prices_by_type$price))
+
+# Nonparametric skew
+npskew = function(x){
+  (mean(x) - median(x)) / sd(x)
+}
+npskew(car_prices_df$price)
+
+# npskew by type
+summarize(car_prices_by_type,
+          npskew(car_prices_by_type$price))
+
+# Kurtosis
+kurtosis = function(x){
+  z = (x - mean(x)) / sd(x)
+  mean(z^4)
+}
+kurtosis(car_prices_df$price)
+# Kurtosis by type
+summarize(car_prices_by_type,
+          kurtosis(car_prices_by_type$price))
+
+# Graphical exploration
+# Histogram
+# Avg price per car per type
+ggplot(car_prices_df,
+       mapping = aes(x = type, y = price, fill = type)) +
+  geom_bar(stat = 'summary', position = 'dodge', fun = 'mean') +
+  labs(x = 'Vehicle Type', 
+       y = 'Vehicle Price', 
+       title = 'Average Price of Vehicle per Vehicle Type')
+
+# Scatter plot of price of vehicle by mpg.highway by type. Fit linear model to each vehicle type
+ggplot(car_prices_df, 
+       mapping = aes(x = mpg.highway, y = price, color = type)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = F) +
+  labs(x = 'Highway Miles per Gallon',
+       y = 'Vehicle Price',
+       title = 'Vehicle Price by Highway MPG by Vehicle Type',
+       color = 'Vehicle Type')
+  
+# Now with single best fit line for the entire data set
+ggplot(car_prices_df, 
+        mapping = aes(x = mpg.highway, y = price)) +
+  geom_point(mapping = aes(color = type)) +
+  geom_smooth(method = 'lm', fullrange = T) + 
+  labs(x = 'Highway Miles per Gallon', 
+       y = 'Vehicle Price',
+       title = 'Vehicle Price by Highway MPG by Vehicle Type',
+       color = 'Vehicle Type')
+
+# Scatter plot of mpg.city and mpg.highway
+ggplot(car_prices_df, 
+       mapping = aes(x = mpg.city, y = mpg.highway)) +
+  geom_point(mapping = aes(color = type)) +
+  geom_smooth(method = 'lm', fullrange = T) + 
+  labs(x = 'City Miles per Gallon', 
+       y = 'Highway Miles per Gallone',
+       title = 'City MPG vs Highway MPG',
+       color = 'Vehicle Type')
+```

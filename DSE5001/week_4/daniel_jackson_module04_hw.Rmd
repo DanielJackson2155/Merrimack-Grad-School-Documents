@@ -1,0 +1,108 @@
+---
+title: "Module 04 Exercises"
+author: "Daniel Jackson"
+date: "September 19th, 2023"
+output: pdf_document
+---
+
+Note: I could not convert plots properly using R Markdown. There will be a word document submitted with code and plot for Exercise 4.2 a, b, c, and d.
+
+# Exercise 4.2
+a.) Z > -1.13
+```{r Exercise 4.2 a}
+# Code to get answer:
+print(1 - pnorm(-1.13, mean = 0, sd = 1))
+```
+Answer: 87.1%
+
+b.) Z < 0.18
+```{r Exercise 4.2 b}
+# Code to get answer:
+print(pnorm(0.18, mean = 0, sd = 1))
+```
+Answer: 57.1%
+
+c.) Z > 8
+```{r Exercise 4.2 c1}
+# Code to get answer:
+print(1 - pnorm(8, mean = 0, sd = 1))
+```
+Answer: approximately 0%
+
+d.) |Z| < 0.5
+```{r Exercise 4.2 d1}
+# Code to get answer:
+1 - (1 - pnorm(0.5)) - pnorm(-0.5)
+```
+Answer is 38.3%
+
+# Exercise 4.4
+a.) 
+Men, Ages 30-34 N($\mu$ = 4313, $\sigma$ = 583)
+
+Women, Ages 25-29 N($\mu$ = 5261, $\sigma$ = 807)
+
+b.)
+
+```{r Exercise 4.4 b1}
+# Leo's Z-score
+leo_z = (4948 - 4313) / 583
+print(leo_z)
+
+# Mary's Z-score
+mary_z = (5513 - 5261) / 807
+print(mary_z)
+```
+Leo is 1.09 standard deviations from mean time of 4313 in his group.
+Mary is 0.3123 standard deviations from mean time of 5261 in her group.
+
+c.)
+
+```{r Exercise 4.4 c1}
+# Leo:
+print(pnorm(1.09))
+```
+Leo finished slower than over 86% of finishers in his group.
+
+```{r Exercise 4.4 c2}
+# Mary:
+print(pnorm(0.3123))
+```
+Mary finished slower than over 62% of finishers in her group.
+
+Mary ranked better in her respective group compared to Leo, as she was less slower in her group compared to Leo.
+
+
+d.)
+```{r Exercise 4.4 d}
+print(1 - pnorm(1.09))
+```
+Leo finished faster than over 13% of finishers.
+
+e.)
+```{r Exercise 4.4 e}
+
+print(1 - pnorm(0.3123))
+```
+Mary finished faster than over 37% of finishers.
+
+f.) 
+If the distribution was not normal, our answers from part b to part e would absolutely change. All of the calculations that were doing were under the requirements of the distribution being normal. 
+
+# Exercise 4.8
+a.)
+Z-score < 0:
+```{r Exercise 4.8 a}
+zero_z = pnorm(0, mean = 14.7, sd = 33)
+print(zero_z)
+```
+This portfolio loses money approximately 32.8% of years
+
+b.)
+Cutoff for highest 15% of annual returns.
+100% - 15% = 85th percentile
+```{r Exercise 4.8 b}
+percentage = qnorm(0.85, mean = 14.7, sd = 33)
+print(percentage)
+```
+The cutoff for highest 15% of annual returns is 48.9%.

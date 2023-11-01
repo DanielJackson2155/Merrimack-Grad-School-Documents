@@ -1,0 +1,507 @@
+---
+title: "Chapter 2 Exercises"
+author: "Daniel Jackson"
+date: "October 26th, 2023"
+output: pdf_document
+---
+
+# Exercise 8
+# a.)
+```{r Exercise 8 a}
+# Set working directory and read in college.csv file
+setwd("/Users/doojerthekid/Documents/Merrimack Grad School Documents/DSE6111")
+college = read.csv("Week_1/College.csv")
+```
+
+# b.) 
+```{r Exercise 8 b}
+fix(college)
+row.names(college) = college[,1]
+fix(college)
+
+# Eliminate first column in data where names are stored
+college = college[,-1]
+fix(college)
+```
+
+# c.)
+i.) 
+```{r Exercise 8 c i}
+summary(college)
+```
+
+ii.)
+```{r Exercise 8 c ii}
+# Convert private variable into factor using as.factor
+college$Private = as.factor(college$Private)
+pairs(college[,1:10])
+```
+
+iii.)
+```{r Exercise 8 c iii}
+plot(college$Private, college$Outstate,
+     xlab = "Private University: Yes or No",
+     ylab = "Out of State Tuition in $")
+```
+
+iv.) 
+```{r Exercise 8 c iv}
+# Create qualitative variable, called Elite, by binning Top10perc variable
+Elite = rep("No", nrow(college))
+Elite[college$Top10perc > 50] = "Yes"
+Elite = as.factor(Elite)
+college = data.frame(college, Elite)
+summary(college)
+
+# Plot side-by-side boxplots of Outstate versus Elite
+plot(college$Elite, college$Outstate,
+     xlab = "Over 50% of New Students from Top 10% of High School Class",
+     ylab = "Out of State Tuition in $")
+```
+78 elite schools meaning they have over 50% of new students from top 10% of high school class. 699 schools have less than 50% of new studnets from top 10% of high school class.
+
+v.)
+```{r Exercise 8 c v}
+# Create four histograms: out of state tuition, book cost, room and board cost,
+## and graduation rate
+par(mfrow=c(2,2))
+hist(college$Outstate)
+hist(college$Books)
+hist(college$Room.Board)
+hist(college$Grad.Rate)
+```
+
+vi.)
+```{r Exercise 8 c vi 1}
+# Find university with highest and lowest acceptance rate
+acceptance_rate = college$Accept / college$Apps
+row.names(college)[which.max(acceptance_rate)]
+# Returned Emporia State University
+row.names(college)[which.min(acceptance_rate)]
+# Returned Princeton University
+# Find acceptance rates of Emporia State University and Princeton University
+max(acceptance_rate)
+# Returns 1, meaning Emporia State University has 100% acceptance rate
+min(acceptance_rate)
+# Returns 0.1545, meaning Princeton University has aprox 15% acceptance rate
+```
+
+```{r Exercise 8 c vi 2}
+# Find universities with highest and lowest enrollment rate
+enrollment_rate = college$Enroll / college$Accept
+row.names(college)[which.max(enrollment_rate)]
+# Returned California Lutheran University
+row.names(college)[which.min(enrollment_rate)]
+# Franklin Pierce College
+# Find enrollment rates of each school
+max(enrollment_rate)
+# Returned 1, meaning 100% of students accepted to California Luthern University, enroll there
+min(enrollment_rate)
+# Returned 0.09975, meaning 9.98% of students accepted by Franklin Pierce College, enroll there
+```
+
+```{r Exercise 8 c vi 3}
+# Look at school(s) with highest and lowest graduation rate
+row.names(college)[which.max(college$Grad.Rate)]
+# Returned Cazenovia College
+row.names(college)[which.min(college$Grad.Rate)]
+# Returned Texas Southern University
+# Find grad rates of each school
+max(college$Grad.Rate)
+# Returned 118% for Cazenovia College. How does that even happen???
+min(college$Grad.Rate)
+# Returned 10% graduation rate for Texas Souther University
+```
+
+```{r Exercise 8 c vi 4}
+# Look at Grad.Rate and see how it matches up with out of state tuition, room and board costs,
+## book costs and personal spending
+par(mfrow=c(2,2))
+plot(college$Outstate, college$Grad.Rate)
+plot(college$Room.Board, college$Grad.Rate)
+plot(college$Books, college$Grad.Rate)
+plot(college$Personal, college$Grad.Rate)
+# Higher out-of-state tuition and higher Room and Boarde costs
+## looks like it means higher graduation rate
+# No real relationship between book/personal costs and graduation rate
+```
+
+```{r Exercise 8 c vi 5}
+# Histogram of grad rate
+hist(college$Grad.Rate)
+# Seems to have unimodal normal distribution
+```
+
+```{r Exercise 8 c vi 6}
+# Histogram of room and board
+hist(college$Room.Board)
+# Also seems to have normal distribution
+```
+
+# Exercise 9
+```{r Exercise 9}
+# Read in Auto data
+auto = read.csv("Week_1/Auto.csv")
+# No NA's in data. There are ?. Change ? to NA's then remove them
+auto$horsepower[auto$horsepower == "?"] = NA
+auto = na.omit(auto)
+```
+
+# a.)
+```{r Exercise 9 a}
+summary(auto)
+```
+Quantitative variables: mpg, cylinders, displacement, horsepower, weight, acceleration.
+Qualitative variables: year, origin, name.
+Year and origin are numerical in the data, but have no purpose being viewed as quantitative.
+
+# b.) 
+Range of each quantitative variable:
+```{r Exercise 9 b 1}
+range(auto$mpg)
+```
+
+```{r Exercise 9 b 2}
+range(auto$cylinders)
+```
+
+```{r Exercise 9 b 3}
+range(auto$displacement)
+```
+
+```{r Exercise 9 b 4}
+# Change horsepower column to integer
+auto$horsepower = as.integer(auto$horsepower)
+range(auto$horsepower)
+```
+
+```{r Exercise 9 b 5}
+range(auto$weight)
+```
+
+```{r Exercise 9 b 6}
+range(auto$acceleration)
+```
+
+# c.)
+Mean and standard deviation of each quantitative variable:
+```{r Exercise 9 c 1, echo = FALSE}
+cat("Mean of mpg is", mean(auto$mpg))
+cat("\n")
+cat("SD of mpg is", sd(auto$mpg))
+```
+
+```{r Exercise 9 c 2, echo = FALSE}
+cat("Mean of cylinders is", mean(auto$cylinders))
+cat("\n")
+cat("SD of cylinders is", sd(auto$cylinders))
+```
+
+```{r Exercise 9 c 3, echo = FALSE}
+cat("Mean of displacement is", mean(auto$displacement))
+cat("\n")
+cat("SD of displacement is", sd(auto$displacement))
+```
+
+```{r Exercise 9 c 4, echo = FALSE}
+cat("Mean of horsepower is", mean(auto$horsepower))
+cat("\n")
+cat("SD of horsepower is", sd(auto$horsepower))
+```
+
+```{r Exercise 9 c 5, echo = FALSE}
+cat("Mean of weight is", mean(auto$weight))
+cat("\n")
+cat("SD of weight is", sd(auto$weight))
+```
+
+```{r Exercise 9 c 6, echo = FALSE}
+cat("Mean of acceleration is", mean(auto$acceleration))
+cat("\n")
+cat("SD of acceleration is", sd(auto$acceleration))
+```
+
+# d.)
+Remove 10th and 85th observation
+```{r Exercise 9 d}
+auto = auto[-c(10, 85), ]
+```
+
+```{r Exercise 9 d 1, echo = FALSE}
+cat("Mean of mpg is", mean(auto$mpg))
+cat("\n")
+cat("SD of mpg is", sd(auto$mpg))
+```
+
+```{r Exercise 9 d 2, echo = FALSE}
+cat("Mean of cylinders is", mean(auto$cylinders))
+cat("\n")
+cat("SD of cylinders is", sd(auto$cylinders))
+```
+
+```{r Exercise 9 d 3, echo = FALSE}
+cat("Mean of displacement is", mean(auto$displacement))
+cat("\n")
+cat("SD of displacement is", sd(auto$displacement))
+```
+
+```{r Exercise 9 d 4, echo = FALSE}
+cat("Mean of horsepower is", mean(auto$horsepower))
+cat("\n")
+cat("SD of horsepower is", sd(auto$horsepower))
+```
+
+```{r Exercise 9 d 5, echo = FALSE}
+cat("Mean of weight is", mean(auto$weight))
+cat("\n")
+cat("SD of weight is", sd(auto$weight))
+```
+
+```{r Exercise 9 d 6, echo = FALSE}
+cat("Mean of acceleration is", mean(auto$acceleration))
+cat("\n")
+cat("SD of acceleration is", sd(auto$acceleration))
+```
+
+Not a big difference on the means and standard deviations when 10th and 85th observations removed.
+
+# e.)
+```{r Exercise 9 e 1}
+plot(auto$weight, auto$mpg)
+```
+
+Seems to have negative relationship. On average, as the weight increases in vehicles, the mpg decreases.
+
+```{r Exercise 9 e 2}
+plot(auto$weight, auto$horsepower)
+```
+
+Seems to have positive relationship. On average, as weight increases in vehicles, the horsepower increases.
+
+```{r Exercise 9 e 3}
+plot(auto$weight, auto$acceleration)
+```
+
+On average, the more heavy a vehicle is, the less acceleration. Not as linear of a relationship compared to miles per gallon and horsepower.
+
+```{r Exercise 9 e 4}
+plot(auto$horsepower, auto$displacement)
+```
+
+Positive relationship here. On average, the more horsepower, the more displacement. 
+
+```{r Exercise 9 e 5}
+plot(auto$horsepower, auto$acceleration)
+```
+
+Negative relationship. On average, the more horsepower, the less acceleration.
+
+```{r Exercise 9 e 6}
+plot(auto$horsepower, auto$mpg)
+```
+
+Negative relationship. On average, the more horsepower, the less mpg.
+
+# f.)
+```{r Exercise 9 f}
+par(mfrow=c(2,2))
+plot(auto$weight, auto$mpg)
+plot(auto$horsepower, auto$mpg)
+plot(auto$displacement, auto$mpg)
+plot(auto$acceleration, auto$mpg)
+```
+Weight, horsepower and displacement seem to be best predictors. They all have a somewhat linear, negative relationship with mpg. As all three increase, mpg on average decreases.
+
+
+# Exercise 10
+# a.)
+```{r Exercise 10 a}
+library(MASS)
+boston = Boston
+dim(boston)
+```
+
+506 rows.  
+14 columns.  
+Each row represents a suburb of Boston.  
+Each column represents a different variable regarding that specific suburb.
+
+# b.)
+```{r Exercise 10 b 1}
+par(mfrow=c(1,1))
+plot(boston$dis, boston$medv)
+```
+
+The farther away from Boston employment centers, the more expensive owner-occupied homes are. More residential.
+
+```{r Exercise 10 b 2}
+plot(boston$dis, boston$medv)
+```
+
+The farther from Boston employment centers, the less non-business acres per town. More residential the farther out from Boston.
+
+```{r Exercise 10 b 3}
+plot(boston$dis, boston$nox)
+```
+
+Farther away from Boston employment centers, less nitrogen oxide concentration. More nitrogen oxide in and near city.
+
+```{r Exercise 10 b 4}
+plot(boston$age, boston$rm)
+```
+
+Not much to report on here. Most houses in and around Boston have 5+ rooms regardless of the proportion of owner-occupied units built prior to 1940.
+
+# c.)
+```{r Exercise 10 c 1}
+plot(boston$nox, boston$crim)
+```
+
+Somewhat associated. But not too much of relationship to say so.
+
+```{r Exercise 10 c 2}
+plot(boston$rm, boston$crim)
+```
+
+Somewhat associated. But not too much of relationship to say so.
+
+```{r Exercise 10 c 3}
+plot(boston$dis, boston$crim)
+```
+
+Higher crime rate in city compared to farther out in the suburbs.
+
+```{r Exercise 10 c 4}
+plot(boston$black, boston$crim)
+```
+
+No correlation here.
+
+```{r Exercise 10 c 5}
+plot(boston$lstat, boston$crim)
+```
+
+Somewhat associated. As lower status of population increases, crime rate seems to increase.
+
+```{r Exercise 10 c 6}
+plot(boston$medv, boston$crim)
+```
+
+Higher the median value of owner-occupied homes, lower the crime rates. Less crime rate in residential areas.
+
+# d.)
+```{r Exercise 10 d 1}
+range(boston$crim)
+```
+
+```{r Exercise 10 d 2}
+range(boston$zn)
+```
+
+```{r Exercise 10 d 3}
+range(boston$indus)
+```
+
+```{r Exercise 10 d 4}
+range(boston$chas)
+```
+
+```{r Exercise 10 d 5}
+range(boston$nox)
+```
+
+```{r Exercise 10 d 6}
+range(boston$rm)
+```
+
+```{r Exercise 10 d 7}
+range(boston$age)
+```
+
+```{r Exercise 10 d 8}
+range(boston$dis)
+```
+
+```{r Exercise 10 d 9}
+range(boston$rad)
+```
+
+```{r Exercise 10 d 10}
+range(boston$tax)
+```
+
+```{r Exercise 10 d 11}
+range(boston$ptratio)
+```
+
+```{r Exercise 10 d 12}
+range(boston$black)
+```
+
+```{r Exercise 10 d 13}
+range(boston$lstat)
+```
+
+```{r Exercise 10 d 14}
+range(boston$medv)
+```
+
+# e.)
+```{r Exercise 10 e}
+# Uses table function to count distinct values in column.
+table(boston$chas)
+```
+
+35 of the 506 suburbs bound the Charles river
+
+# f.)
+```{r Exercise 10 f}
+summary(boston$ptratio)
+```
+
+Used summary() function to find median pupil-teacher ration is 19.05%
+
+# g.)
+```{r Exercise 10 g 1}
+row.names(boston)[which.min(boston$medv)]
+```
+The 399th suburb on the list has lowest median value of owner-occupied homes.
+
+```{r Exercise 10 g 2}
+# Values of other predictors of 399th suburb:
+boston[399,]
+```
+
+crim: Closer to lower end of range compared to higher. About halfway in the range.  
+zn: Lowest possible value in range.  
+indus: Closer to higher range value.  
+chas: 0. Does not bound Charles river.  
+nox: Closer to higher end of range.  
+rm: Closer to higher end of range.  
+age: Highest possible value.  
+dis: Close to lower end of range. Close to Boston.  
+rad: Highest possible value of rad.  
+tax: Closer to higher end of tax value range.  
+ptration: Close to high end of range.  
+black: Highest possible value of variable.  
+lstat: Close to highest value in range.  
+medv: Lowest possible value in range.  
+
+# h.)
+```{r Exercise 10 h 1}
+sum(boston$rm > 7)
+```
+64 suburbs. Used sum() function to add up how many rows have greater than 7 rooms.
+
+```{r Exercise 10 h 2}
+# Do the same for rm variable greater than 8
+sum(boston$rm > 8)
+```
+13 suburbs.
+
+```{r Exercise 10 h 3}
+# Summary on 13 suburbs
+summary(subset(boston, rm > 8))
+```
+
+Looking at summary of the 13 suburbs, one thing that I noticed is that they have a higher than average median value for the age variable. Meaning that that the proportion of houses built between 1940 are high in those suburbs. And on average, they are not too far away from the city. 
